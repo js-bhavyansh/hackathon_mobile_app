@@ -35,7 +35,7 @@ class SlotModel extends Equatable {
         date: json['date'] as String? ?? date,
         startTime: json['start_time'] as String,
         endTime: json['end_time'] as String,
-        status: json['status'] as String,
+        status: json['status'] as String? ?? 'booked',
       );
 
   SlotModel copyWith({String? status}) => SlotModel(
