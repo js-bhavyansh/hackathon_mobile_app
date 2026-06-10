@@ -56,6 +56,17 @@ class _VenueDetailBodyState extends State<_VenueDetailBody> {
     context.read<VenueCubit>().loadSlots(widget.venue.id, _formattedDate);
   }
 
+  // True if the slot's start hour has already passed today
+  bool _isSlotPast(SlotModel slot) {
+    final now = DateTime.now();
+    final isToday = _selectedDate.year == now.year &&
+        _selectedDate.month == now.month &&
+        _selectedDate.day == now.day;
+    if (!isToday) return false;
+    final hour = int.parse(slot.startTime.split(':')[0]);
+    return now.hour >= hour;
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
@@ -143,10 +154,12 @@ class _VenueDetailBodyState extends State<_VenueDetailBody> {
                       itemBuilder: (context, i) {
                         final slot = state.slots[i];
                         final isSelected = _selectedSlot?.id == slot.id;
+                        final isPast = _isSlotPast(slot);
                         return _SlotTile(
                           slot: slot,
                           isSelected: isSelected,
-                          onTap: slot.isAvailable
+                          isPast: isPast,
+                          onTap: slot.isAvailable && !isPast
                               ? () => setState(() => _selectedSlot = isSelected ? null : slot)
                               : null,
                         );
@@ -178,7 +191,9 @@ class _DateSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
     final today = DateTime.now();
-    final canGoPrev = selectedDate.isAfter(DateTime(today.year, today.month, today.day));
+    final todayMidnight = DateTime(today.year, today.month, today.day);
+    final selectedMidnight = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+    final canGoPrev = selectedMidnight.isAfter(todayMidnight);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -209,9 +224,10 @@ class _DateSelector extends StatelessWidget {
 class _SlotTile extends StatelessWidget {
   final SlotModel slot;
   final bool isSelected;
+  final bool isPast;
   final VoidCallback? onTap;
 
-  const _SlotTile({required this.slot, required this.isSelected, this.onTap});
+  const _SlotTile({required this.slot, required this.isSelected, required this.isPast, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +235,7 @@ class _SlotTile extends StatelessWidget {
     final Color bg;
     final Color textColor;
 
-    if (!slot.isAvailable) {
+    if (!slot.isAvailable || isPast) {
       bg = color.primaryFixedDim;
       textColor = color.secondary.withValues(alpha: 0.5);
     } else if (isSelected) {
