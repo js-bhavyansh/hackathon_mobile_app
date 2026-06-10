@@ -44,9 +44,29 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   ),
                   GestureDetector(
                     onTap: () async {
-                      await Supabase.instance.client.auth.signOut();
-                      if (context.mounted) {
-                        Navigator.pushReplacementNamed(context, AppRoutes.signInScreen);
+                      final color = Theme.of(context).colorScheme;
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: color.primaryFixed,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          title: Text('Sign out?', style: TextStyle(color: color.onSurface, fontWeight: FontWeight.bold)),
+                          content: Text('You will need to sign in again to book slots.', style: TextStyle(color: color.secondary)),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: Text('Cancel', style: TextStyle(color: color.secondary)),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: Text('Sign out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true && context.mounted) {
+                        await Supabase.instance.client.auth.signOut();
+                        if (context.mounted) Navigator.pushReplacementNamed(context, AppRoutes.signInScreen);
                       }
                     },
                     child: Container(

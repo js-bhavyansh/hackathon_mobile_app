@@ -254,18 +254,40 @@ class _VenueCard extends StatelessWidget {
   }
 }
 
-// Sign out icon button — signs out via Supabase and navigates to sign-in
+// Sign out icon button — shows confirmation dialog then signs out
 class _SignOutButton extends StatelessWidget {
+  Future<void> _confirmSignOut(BuildContext context) async {
+    final color = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: color.primaryFixed,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Sign out?', style: TextStyle(color: color.onSurface, fontWeight: FontWeight.bold)),
+        content: Text('You will need to sign in again to book slots.', style: TextStyle(color: color.secondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: TextStyle(color: color.secondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Sign out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await Supabase.instance.client.auth.signOut();
+      if (context.mounted) Navigator.pushReplacementNamed(context, AppRoutes.signInScreen);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
     return GestureDetector(
-      onTap: () async {
-        await Supabase.instance.client.auth.signOut();
-        if (context.mounted) {
-          Navigator.pushReplacementNamed(context, AppRoutes.signInScreen);
-        }
-      },
+      onTap: () => _confirmSignOut(context),
       child: Container(
         width: 42,
         height: 42,

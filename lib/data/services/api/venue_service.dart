@@ -16,6 +16,6 @@ class VenueService {
   Future<List<SlotModel>> getSlots(String venueId, String date) async {
     final res = await _dio.get('/venues/$venueId/slots', queryParameters: {'date': date});
     final List data = (res.data as Map<String, dynamic>)['data'] as List;
-    return data.map((e) => SlotModel.fromJson(e as Map<String, dynamic>)).toList();
+    return data.map((e) => SlotModel.fromJson(e as Map<String, dynamic>, venueId: venueId, date: date)).toList();
   }
 }

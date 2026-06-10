@@ -28,10 +28,11 @@ class SlotModel extends Equatable {
     return '$displayHour:00 $suffix';
   }
 
-  factory SlotModel.fromJson(Map<String, dynamic> json) => SlotModel(
+  // venueId and date are injected from the call site — not returned by the API
+  factory SlotModel.fromJson(Map<String, dynamic> json, {String venueId = '', String date = ''}) => SlotModel(
         id: json['id'] as String,
-        venueId: json['venue_id'] as String,
-        date: json['date'] as String,
+        venueId: json['venue_id'] as String? ?? venueId,
+        date: json['date'] as String? ?? date,
         startTime: json['start_time'] as String,
         endTime: json['end_time'] as String,
         status: json['status'] as String,
