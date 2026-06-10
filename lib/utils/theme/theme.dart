@@ -17,11 +17,11 @@ ThemeData lightMode = ThemeData(
 ThemeData darkMode = ThemeData(
   brightness: Brightness.dark,
   colorScheme: ColorScheme.dark(
-    surface: Colors.grey.shade900,
-    onSurface: Colors.grey.shade100,
+    surface: Color(0xFF000000),
+    onSurface: Color(0xFFFFFFFF),
     primary: Colors.grey.shade700,
     secondary: Colors.grey.shade300,
-    primaryFixed: Colors.grey.shade300,
+    primaryFixed: Color(0xFF1C1C1C),
     primaryFixedDim: Colors.grey.shade800,
     tertiary: Colors.brown.shade500,
     tertiaryContainer: Colors.brown.shade300,
