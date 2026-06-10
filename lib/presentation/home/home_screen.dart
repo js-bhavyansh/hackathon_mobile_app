@@ -32,22 +32,34 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
       child: Scaffold(
         backgroundColor: color.surface,
+        // extendBody lets content render behind the floating nav bar
+        extendBody: true,
         body: IndexedStack(index: _selectedIndex, children: _pages),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: color.primaryFixed,
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20)],
-          ),
-          child: SafeArea(
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+          child: Container(
+            decoration: BoxDecoration(
+              color: color.onSurface,
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  blurRadius: 24,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: GNav(
-                backgroundColor: color.primaryFixed,
-                color: color.secondary,
-                activeColor: color.tertiary,
-                tabBackgroundColor: color.tertiary.withValues(alpha: 0.12),
+                backgroundColor: color.onSurface,
+                color: color.surface,
+                activeColor: color.onSurface,
+                // solid dark/light pill — no alpha
+                tabBackgroundColor: color.surface,
                 gap: 8,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                tabBorderRadius: 24,
                 duration: const Duration(milliseconds: 250),
                 selectedIndex: _selectedIndex,
                 onTabChange: (i) => setState(() => _selectedIndex = i),

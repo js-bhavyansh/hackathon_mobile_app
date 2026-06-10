@@ -114,7 +114,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     return RefreshIndicator(
                       onRefresh: () => context.read<BookingCubit>().loadMyBookings(),
                       child: ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
                         children: [
                           if (active.isNotEmpty) ...[
                             _sectionLabel('Upcoming', color),
@@ -124,7 +124,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                             _sectionLabel('Cancelled', color),
                             ...past.map((b) => _BookingCard(booking: b)),
                           ],
-                          const SizedBox(height: 20),
                         ],
                       ),
                     );
