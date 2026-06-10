@@ -60,6 +60,20 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       ],
                     ),
                   ),
+                  // Refresh button
+                  GestureDetector(
+                    onTap: () => context.read<BookingCubit>().loadMyBookings(),
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: color.primaryFixedDim,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.refresh_rounded, size: 20, color: color.onSurface),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   // Sign out button
                   GestureDetector(
                     onTap: () async {
