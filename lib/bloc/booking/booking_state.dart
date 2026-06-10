@@ -1,0 +1,33 @@
+import 'package:booking_slot_app/data/models/booking_model.dart';
+import 'package:equatable/equatable.dart';
+
+abstract class BookingState extends Equatable {
+  const BookingState();
+  @override
+  List<Object?> get props => [];
+}
+
+class BookingInitial extends BookingState {}
+
+class BookingLoading extends BookingState {}
+
+class BookingListLoaded extends BookingState {
+  final List<BookingModel> bookings;
+  const BookingListLoaded(this.bookings);
+  @override
+  List<Object?> get props => [bookings];
+}
+
+class BookingSuccess extends BookingState {
+  final String bookingId;
+  const BookingSuccess(this.bookingId);
+  @override
+  List<Object?> get props => [bookingId];
+}
+
+class BookingError extends BookingState {
+  final String message;
+  const BookingError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
