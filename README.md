@@ -1,4 +1,9 @@
 # QuickSlot — Sports Slot Booking App
+# Note: Sorry guys, I was short on time. It's 12:57 AM, and I'm just now pasting the video link here:
+
+https://drive.google.com/file/d/1iJ9PoDh3Oa-Bhm2xdUO4CU9oGtA-TXGk/view?usp=sharing
+
+You can also check when this project was last updated from the repository history.
 
 A Flutter mobile app for booking sports venue slots (badminton courts, turf fields). Built for a hackathon.
 
