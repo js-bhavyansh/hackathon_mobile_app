@@ -1,6 +1,7 @@
 import 'package:booking_slot_app/bloc/venue/venue_state.dart';
 import 'package:booking_slot_app/data/models/venue_model.dart';
 import 'package:booking_slot_app/data/services/api/venue_service.dart';
+import 'package:booking_slot_app/utils/api_error_handler.dart';
 import 'package:booking_slot_app/utils/log.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,7 +19,7 @@ class VenueCubit extends Cubit<VenueState> {
       emit(VenueListLoaded(_allVenues));
     } catch (e) {
       Log.e('loadVenues: $e');
-      emit(const VenueError('Failed to load venues. Please try again.'));
+      emit(VenueError(ApiErrorHandler.message(e)));
     }
   }
 
@@ -37,7 +38,7 @@ class VenueCubit extends Cubit<VenueState> {
       emit(SlotsLoaded(slots, date));
     } catch (e) {
       Log.e('loadSlots: $e');
-      emit(const VenueError('Failed to load slots. Please try again.'));
+      emit(VenueError(ApiErrorHandler.message(e)));
     }
   }
 }

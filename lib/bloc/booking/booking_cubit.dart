@@ -1,5 +1,5 @@
 import 'package:booking_slot_app/bloc/booking/booking_state.dart';
-import 'package:booking_slot_app/data/services/api/api_error_handler.dart';
+import 'package:booking_slot_app/utils/api_error_handler.dart';
 import 'package:booking_slot_app/data/services/api/booking_service.dart';
 import 'package:booking_slot_app/utils/log.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,7 +17,7 @@ class BookingCubit extends Cubit<BookingState> {
       emit(BookingSuccess(bookingId));
     } catch (e) {
       Log.e('bookSlot: $e');
-      final msg = ApiErrorHandler.parse(e);
+      final msg = ApiErrorHandler.message(e);
       // 409 means slot already taken
       emit(BookingError(msg));
     }
@@ -30,7 +30,7 @@ class BookingCubit extends Cubit<BookingState> {
       emit(BookingListLoaded(bookings));
     } catch (e) {
       Log.e('loadMyBookings: $e');
-      emit(const BookingError('Failed to load bookings.'));
+      emit(BookingError(ApiErrorHandler.message(e)));
     }
   }
 
@@ -43,7 +43,7 @@ class BookingCubit extends Cubit<BookingState> {
       emit(BookingListLoaded(bookings));
     } catch (e) {
       Log.e('cancelBooking: $e');
-      emit(const BookingError('Failed to cancel booking.'));
+      emit(BookingError(ApiErrorHandler.message(e)));
     }
   }
 }
