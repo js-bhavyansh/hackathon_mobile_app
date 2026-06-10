@@ -32,19 +32,37 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header row with title and sign-out
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      'My Bookings',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color.onSurface),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'My Bookings',
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color.onSurface),
+                        ),
+                        BlocBuilder<BookingCubit, BookingState>(
+                          builder: (context, state) {
+                            if (state is BookingListLoaded) {
+                              final count = state.bookings.where((b) => b.isConfirmed).length;
+                              return Text(
+                                '$count upcoming',
+                                style: TextStyle(color: color.secondary, fontSize: 13),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
                     ),
                   ),
+                  // Sign out button
                   GestureDetector(
                     onTap: () async {
-                      final color = Theme.of(context).colorScheme;
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
@@ -82,6 +100,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 12),
             Expanded(
               child: BlocBuilder<BookingCubit, BookingState>(
                 builder: (context, state) {
@@ -103,9 +122,19 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.calendar_today_outlined, size: 56, color: color.secondary),
-                            const SizedBox(height: 12),
-                            Text('No bookings yet', style: TextStyle(color: color.secondary, fontSize: 15)),
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: color.primaryFixedDim,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.calendar_today_outlined, size: 36, color: color.secondary),
+                            ),
+                            const SizedBox(height: 16),
+                            Text('No bookings yet', style: TextStyle(color: color.onSurface, fontSize: 16, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 6),
+                            Text('Book a slot to see it here', style: TextStyle(color: color.secondary, fontSize: 13)),
                           ],
                         ),
                       );
@@ -140,87 +169,226 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 }
 
 Widget _sectionLabel(String text, ColorScheme color) => Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      child: Text(text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color.secondary)),
+      padding: const EdgeInsets.only(top: 4, bottom: 10),
+      child: Text(
+        text.toUpperCase(),
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color.secondary, letterSpacing: 1.2),
+      ),
     );
 
 class _BookingCard extends StatelessWidget {
   final BookingModel booking;
   const _BookingCard({required this.booking});
 
+  // Match venue card gradient colors by sport type
+  List<Color> get _sportGradient {
+    if (booking.venue?.sportType.toLowerCase() == 'turf') {
+      return [const Color(0xFF14B8A6), const Color(0xFF06B6D4)];
+    }
+    return [const Color(0xFF8B5CF6), const Color(0xFF6366F1)];
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
     final venue = booking.venue;
     final slot = booking.slot;
+    final isTurf = venue?.sportType.toLowerCase() == 'turf';
 
-    // Parse booked date for display
-    final bookedAt = DateTime.tryParse(booking.bookedAt);
-    final dateStr = bookedAt != null ? DateFormat('MMM d, yyyy').format(bookedAt) : '';
+    String dateDisplay = '';
+    if (slot != null && slot.date.isNotEmpty) {
+      final d = DateTime.tryParse(slot.date);
+      if (d != null) dateDisplay = DateFormat('MMM d, yyyy').format(d);
+    }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: color.primaryFixedDim,
-        borderRadius: BorderRadius.circular(16),
-        border: booking.isConfirmed
-            ? Border.all(color: color.tertiary.withValues(alpha: 0.3), width: 1)
-            : null,
+        color: color.primaryFixed,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: booking.isConfirmed
+              ? _sportGradient[0].withValues(alpha: 0.25)
+              : color.primary.withValues(alpha: 0.15),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          // Sport icon container
+          // Top header — gradient tint + sport icon + venue name + status badge
           Container(
-            width: 48,
-            height: 48,
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
             decoration: BoxDecoration(
-              color: booking.isConfirmed
-                  ? color.tertiary.withValues(alpha: 0.15)
-                  : color.primary.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: booking.isConfirmed
+                    ? [_sportGradient[0].withValues(alpha: 0.12), _sportGradient[1].withValues(alpha: 0.04)]
+                    : [color.primaryFixedDim, color.primaryFixed],
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: Icon(
-              venue?.sportType.toLowerCase() == 'turf'
-                  ? Icons.sports_soccer_rounded
-                  : Icons.sports_tennis_rounded,
-              color: booking.isConfirmed ? color.tertiary : color.secondary,
-              size: 24,
+            child: Row(
+              children: [
+                // Sport icon with gradient background
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: booking.isConfirmed
+                        ? LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: _sportGradient,
+                          )
+                        : null,
+                    color: booking.isConfirmed ? null : color.primary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isTurf ? Icons.sports_soccer_rounded : Icons.sports_tennis_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        venue?.name ?? 'Venue',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: color.onSurface),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        venue?.sportType ?? '',
+                        style: TextStyle(color: color.secondary, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Confirmed / Cancelled badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: booking.isConfirmed
+                        ? const Color(0xFF22C55E).withValues(alpha: 0.13)
+                        : color.primaryFixedDim,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        booking.isConfirmed ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                        size: 12,
+                        color: booking.isConfirmed ? const Color(0xFF22C55E) : color.secondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        booking.isConfirmed ? 'Confirmed' : 'Cancelled',
+                        style: TextStyle(
+                          color: booking.isConfirmed ? const Color(0xFF22C55E) : color.secondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+
+          // Divider line
+          Divider(height: 1, color: color.primary.withValues(alpha: 0.12)),
+
+          // Bottom info — time, date chips + location + cancel
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  venue?.name ?? 'Venue',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: color.onSurface),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Time + date chips
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          if (slot != null)
+                            _InfoChip(icon: Icons.access_time_rounded, label: slot.formattedTime, color: color),
+                          if (dateDisplay.isNotEmpty)
+                            _InfoChip(icon: Icons.calendar_today_rounded, label: dateDisplay, color: color),
+                        ],
+                      ),
+                      if (venue?.location != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on_outlined, size: 13, color: color.secondary),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                venue!.location,
+                                style: TextStyle(color: color.secondary, fontSize: 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  slot != null ? '${slot.formattedTime} · ${slot.date}' : dateStr,
-                  style: TextStyle(color: color.secondary, fontSize: 12),
-                ),
-                if (venue?.location != null) ...[
-                  const SizedBox(height: 2),
-                  Text(venue!.location, style: TextStyle(color: color.secondary, fontSize: 11)),
+                if (booking.isConfirmed) ...[
+                  const SizedBox(width: 12),
+                  _CancelButton(bookingId: booking.id),
                 ],
               ],
             ),
           ),
-          // Status badge or cancel button
-          if (booking.isConfirmed)
-            _CancelButton(bookingId: booking.id)
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: color.primary.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text('Cancelled', style: TextStyle(color: color.secondary, fontSize: 11)),
-            ),
+        ],
+      ),
+    );
+  }
+}
+
+// Small icon + text chip used for time and date info
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final ColorScheme color;
+  const _InfoChip({required this.icon, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.primaryFixedDim,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color.secondary),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(color: color.secondary, fontSize: 11, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -233,14 +401,19 @@ class _CancelButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => _confirmCancel(context),
-      style: TextButton.styleFrom(
-        foregroundColor: Colors.redAccent,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    return GestureDetector(
+      onTap: () => _confirmCancel(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Text(
+          'Cancel',
+          style: TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.w600),
+        ),
       ),
-      child: const Text('Cancel', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
     );
   }
 
@@ -248,16 +421,26 @@ class _CancelButton extends StatelessWidget {
     final color = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       backgroundColor: color.primaryFixed,
       builder: (sheetCtx) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: color.primary, borderRadius: BorderRadius.circular(2))),
+            Container(width: 36, height: 4, decoration: BoxDecoration(color: color.primary, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
-            Text('Cancel booking?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: color.onSurface)),
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.cancel_outlined, color: Colors.redAccent, size: 28),
+            ),
+            const SizedBox(height: 16),
+            Text('Cancel booking?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: color.onSurface)),
             const SizedBox(height: 8),
             Text('This action cannot be undone.', style: TextStyle(color: color.secondary, fontSize: 13)),
             const SizedBox(height: 24),
@@ -268,10 +451,10 @@ class _CancelButton extends StatelessWidget {
                     onPressed: () => Navigator.pop(sheetCtx),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: color.primary),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: Text('Keep it', style: TextStyle(color: color.onSurface)),
+                    child: Text('Keep it', style: TextStyle(color: color.onSurface, fontWeight: FontWeight.w600)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -284,10 +467,11 @@ class _CancelButton extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
                     ),
-                    child: const Text('Yes, cancel'),
+                    child: const Text('Yes, cancel', style: TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],

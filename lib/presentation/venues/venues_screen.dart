@@ -54,8 +54,10 @@ class _VenuesScreenState extends State<VenuesScreen> {
                         Text('Welcome back 👋', style: TextStyle(color: color.secondary, fontSize: 13)),
                         const SizedBox(height: 2),
                         Text(
-                          "Let's find a slot",
-                          style: TextStyle(color: color.onSurface, fontSize: 22, fontWeight: FontWeight.bold),
+                          Supabase.instance.client.auth.currentUser?.email ?? "Let's find a slot",
+                          style: TextStyle(color: color.onSurface, fontSize: 18, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
