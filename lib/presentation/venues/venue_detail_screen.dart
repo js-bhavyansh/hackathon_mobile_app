@@ -42,6 +42,13 @@ class _VenueDetailBodyState extends State<_VenueDetailBody> {
 
   String get _formattedDate => DateFormat('yyyy-MM-dd').format(_selectedDate);
 
+  List<Color> get _gradientColors {
+    if (widget.venue.sportType.toLowerCase() == 'turf') {
+      return [const Color(0xFF14B8A6), const Color(0xFF06B6D4)];
+    }
+    return [const Color(0xFF8B5CF6), const Color(0xFF6366F1)];
+  }
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +63,6 @@ class _VenueDetailBodyState extends State<_VenueDetailBody> {
     context.read<VenueCubit>().loadSlots(widget.venue.id, _formattedDate);
   }
 
-  // True if the slot's start hour has already passed today
   bool _isSlotPast(SlotModel slot) {
     final now = DateTime.now();
     final isToday = _selectedDate.year == now.year &&
@@ -70,67 +76,193 @@ class _VenueDetailBodyState extends State<_VenueDetailBody> {
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
+    final isTurf = widget.venue.sportType.toLowerCase() == 'turf';
 
     return BlocListener<BookingCubit, BookingState>(
       listener: (context, state) {
         if (state is BookingSuccess) {
           setState(() => _selectedSlot = null);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: const Text('Slot booked successfully! 🎉'), backgroundColor: color.tertiary),
+            SnackBar(
+              content: const Text('Slot booked successfully! 🎉'),
+              backgroundColor: color.tertiary,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            ),
           );
           context.read<VenueCubit>().loadSlots(widget.venue.id, _formattedDate);
         } else if (state is BookingError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.redAccent),
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            ),
           );
         }
       },
       child: Scaffold(
         backgroundColor: color.surface,
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor: color.surface,
+          backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: color.onSurface, size: 20),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            widget.venue.name,
-            style: TextStyle(color: color.onSurface, fontWeight: FontWeight.bold, fontSize: 17),
-          ),
-          actions: [
-            Container(
-              margin: const EdgeInsets.only(right: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: color.tertiary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                widget.venue.sportType,
-                style: TextStyle(color: color.tertiary, fontSize: 12, fontWeight: FontWeight.w600),
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
               ),
             ),
-          ],
+          ),
         ),
         body: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
+            // ── Hero header with gradient ──────────────────────────────
+            Container(
+              height: 200,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [_gradientColors[0].withValues(alpha: 0.9), _gradientColors[1]],
+                ),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+              ),
+              child: Stack(
                 children: [
-                  Icon(Icons.location_on_outlined, color: color.secondary, size: 16),
-                  const SizedBox(width: 4),
-                  Text(widget.venue.location, style: TextStyle(color: color.secondary, fontSize: 13)),
+                  // Decorative circles
+                  Positioned(
+                    top: -30,
+                    right: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -20,
+                    left: -20,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.06),
+                      ),
+                    ),
+                  ),
+                  // Content
+                  Positioned(
+                    left: 24,
+                    right: 24,
+                    bottom: 24,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isTurf ? Icons.sports_soccer_rounded : Icons.sports_tennis_rounded,
+                                color: Colors.white,
+                                size: 13,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                widget.venue.sportType,
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.venue.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined, color: Colors.white70, size: 14),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                widget.venue.location,
+                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // ── Date selector ──────────────────────────────────────────
             _DateSelector(
               selectedDate: _selectedDate,
               onPrev: () => _onDateChanged(-1),
               onNext: () => _onDateChanged(1),
+              gradientColors: _gradientColors,
             ),
-            const SizedBox(height: 12),
+
+            const SizedBox(height: 16),
+
+            // ── Section label ──────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Text(
+                    'AVAILABLE SLOTS',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: color.secondary,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // ── Slot grid ──────────────────────────────────────────────
             Expanded(
               child: BlocBuilder<VenueCubit, VenueState>(
                 builder: (context, state) {
@@ -142,13 +274,35 @@ class _VenueDetailBodyState extends State<_VenueDetailBody> {
                     );
                   }
                   if (state is SlotsLoaded) {
+                    if (state.slots.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: color.primaryFixedDim,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.event_busy_rounded, size: 30, color: color.secondary),
+                            ),
+                            const SizedBox(height: 12),
+                            Text('No slots available', style: TextStyle(color: color.onSurface, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 4),
+                            Text('Try a different date', style: TextStyle(color: color.secondary, fontSize: 13)),
+                          ],
+                        ),
+                      );
+                    }
                     return GridView.builder(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 1.4,
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.55,
                       ),
                       itemCount: state.slots.length,
                       itemBuilder: (context, i) {
@@ -159,6 +313,7 @@ class _VenueDetailBodyState extends State<_VenueDetailBody> {
                           slot: slot,
                           isSelected: isSelected,
                           isPast: isPast,
+                          gradientColors: _gradientColors,
                           onTap: slot.isAvailable && !isPast
                               ? () => setState(() => _selectedSlot = isSelected ? null : slot)
                               : null,
@@ -173,7 +328,7 @@ class _VenueDetailBodyState extends State<_VenueDetailBody> {
           ],
         ),
         bottomSheet: _selectedSlot != null
-            ? _BookingSheet(slot: _selectedSlot!, venueName: widget.venue.name)
+            ? _BookingSheet(slot: _selectedSlot!, venueName: widget.venue.name, gradientColors: _gradientColors)
             : null,
       ),
     );
@@ -184,8 +339,14 @@ class _DateSelector extends StatelessWidget {
   final DateTime selectedDate;
   final VoidCallback onPrev;
   final VoidCallback onNext;
+  final List<Color> gradientColors;
 
-  const _DateSelector({required this.selectedDate, required this.onPrev, required this.onNext});
+  const _DateSelector({
+    required this.selectedDate,
+    required this.onPrev,
+    required this.onNext,
+    required this.gradientColors,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -197,25 +358,69 @@ class _DateSelector extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(Icons.chevron_left_rounded, color: canGoPrev ? color.onSurface : color.primary),
-            onPressed: canGoPrev ? onPrev : null,
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                DateFormat('EEEE, MMM d').format(selectedDate),
-                style: TextStyle(color: color.onSurface, fontWeight: FontWeight.w600, fontSize: 15),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.primaryFixed,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.primary.withValues(alpha: 0.15)),
+        ),
+        child: Row(
+          children: [
+            _NavButton(
+              icon: Icons.chevron_left_rounded,
+              enabled: canGoPrev,
+              onTap: canGoPrev ? onPrev : null,
+              color: color,
+            ),
+            Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    DateFormat('EEEE').format(selectedDate),
+                    style: TextStyle(color: color.secondary, fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    DateFormat('MMM d, yyyy').format(selectedDate),
+                    style: TextStyle(color: color.onSurface, fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                ],
               ),
             ),
-          ),
-          IconButton(
-            icon: Icon(Icons.chevron_right_rounded, color: color.onSurface),
-            onPressed: onNext,
-          ),
-        ],
+            _NavButton(
+              icon: Icons.chevron_right_rounded,
+              enabled: true,
+              onTap: onNext,
+              color: color,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback? onTap;
+  final ColorScheme color;
+
+  const _NavButton({required this.icon, required this.enabled, required this.color, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: enabled ? color.primaryFixedDim : Colors.transparent,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: enabled ? color.onSurface : color.primary, size: 22),
       ),
     );
   }
@@ -226,40 +431,87 @@ class _SlotTile extends StatelessWidget {
   final bool isSelected;
   final bool isPast;
   final VoidCallback? onTap;
+  final List<Color> gradientColors;
 
-  const _SlotTile({required this.slot, required this.isSelected, required this.isPast, this.onTap});
+  const _SlotTile({
+    required this.slot,
+    required this.isSelected,
+    required this.isPast,
+    required this.gradientColors,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
-    final Color bg;
-    final Color textColor;
-
-    if (!slot.isAvailable || isPast) {
-      bg = color.primaryFixedDim;
-      textColor = color.secondary.withValues(alpha: 0.5);
-    } else if (isSelected) {
-      bg = color.tertiary;
-      textColor = Colors.white;
-    } else {
-      bg = color.primaryFixedDim;
-      textColor = color.onSurface;
-    }
+    final unavailable = !slot.isAvailable || isPast;
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(10),
-          border: isSelected ? Border.all(color: color.tertiary, width: 2) : null,
+          gradient: isSelected
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: gradientColors,
+                )
+              : null,
+          color: isSelected ? null : color.primaryFixed,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : unavailable
+                    ? color.primary.withValues(alpha: 0.1)
+                    : color.primary.withValues(alpha: 0.2),
+            width: 1,
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: gradientColors[0].withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 4))]
+              : null,
         ),
-        alignment: Alignment.center,
-        child: Text(
-          slot.formattedTime,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
-          textAlign: TextAlign.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              slot.startTime.substring(0, 5),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isSelected
+                    ? Colors.white
+                    : unavailable
+                        ? color.secondary.withValues(alpha: 0.4)
+                        : color.onSurface,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.25)
+                    : unavailable
+                        ? color.primaryFixedDim
+                        : gradientColors[0].withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                unavailable ? (isPast ? 'Past' : 'Booked') : 'Open',
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected
+                      ? Colors.white
+                      : unavailable
+                          ? color.secondary.withValues(alpha: 0.4)
+                          : gradientColors[0],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -270,8 +522,9 @@ class _SlotTile extends StatelessWidget {
 class _BookingSheet extends StatelessWidget {
   final SlotModel slot;
   final String venueName;
+  final List<Color> gradientColors;
 
-  const _BookingSheet({required this.slot, required this.venueName});
+  const _BookingSheet({required this.slot, required this.venueName, required this.gradientColors});
 
   @override
   Widget build(BuildContext context) {
@@ -281,44 +534,82 @@ class _BookingSheet extends StatelessWidget {
       builder: (context, state) {
         final isLoading = state is BookingLoading;
         return Container(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
           decoration: BoxDecoration(
             color: color.primaryFixed,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20)],
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 24, offset: const Offset(0, -4))],
           ),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(slot.formattedTime,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color.onSurface)),
-                    Text(venueName, style: TextStyle(color: color.secondary, fontSize: 13)),
-                  ],
+              // Drag handle
+              Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: color.primary,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(width: 12),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : () => context.read<BookingCubit>().bookSlot(slot.id),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: color.tertiary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+              Row(
+                children: [
+                  // Slot icon
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: gradientColors,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.schedule_rounded, color: Colors.white, size: 24),
                   ),
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text('Book Now', style: TextStyle(fontWeight: FontWeight.w600)),
-                ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          slot.formattedTime,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: color.onSurface),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          venueName,
+                          style: TextStyle(color: color.secondary, fontSize: 13),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : () => context.read<BookingCubit>().bookSlot(slot.id),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: gradientColors[0],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        elevation: 0,
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Text('Book Now', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

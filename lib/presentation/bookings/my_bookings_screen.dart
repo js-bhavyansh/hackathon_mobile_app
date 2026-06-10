@@ -205,7 +205,7 @@ class _BookingCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: color.primaryFixed,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: booking.isConfirmed
               ? _sportGradient[0].withValues(alpha: 0.25)
@@ -233,7 +233,7 @@ class _BookingCard extends StatelessWidget {
                     ? [_sportGradient[0].withValues(alpha: 0.12), _sportGradient[1].withValues(alpha: 0.04)]
                     : [color.primaryFixedDim, color.primaryFixed],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Row(
               children: [
@@ -421,7 +421,7 @@ class _CancelButton extends StatelessWidget {
     final color = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
       backgroundColor: color.primaryFixed,
       builder: (sheetCtx) => Padding(
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
