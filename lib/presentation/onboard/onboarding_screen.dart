@@ -19,40 +19,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       backgroundColor: color.surface,
       body: Stack(
         children: [
-          // Top-left blob — blue-purple
+          // Top-left blob — warm amber
           Positioned(
             top: -60,
             left: -60,
             child: _GradientBlob(
               size: size.width * 0.75,
-              colors: [const Color(0xFF8B5CF6), const Color(0xFF6366F1)],
+              colors: [const Color(0xFFB45309), const Color(0xFF92400E)],
             ),
           ),
-          // Top-right smaller blob — pink
+          // Top-right smaller blob — muted brown
           Positioned(
             top: size.height * 0.1,
             right: -40,
             child: _GradientBlob(
               size: size.width * 0.4,
-              colors: [const Color(0xFFEC4899), const Color(0xFFF97316)],
+              colors: [const Color(0xFF78350F), const Color(0xFF92400E)],
             ),
           ),
-          // Bottom-center blob — orange-yellow
+          // Bottom-center blob — deep amber
           Positioned(
             bottom: -80,
             left: size.width * 0.1,
             child: _GradientBlob(
               size: size.width * 0.7,
-              colors: [const Color(0xFFF97316), const Color(0xFFFBBF24)],
+              colors: [const Color(0xFFD97706), const Color(0xFFB45309)],
             ),
           ),
-          // Bottom-right teal blob
+          // Bottom-right blob — warm sienna
           Positioned(
             bottom: size.height * 0.15,
             right: -30,
             child: _GradientBlob(
               size: size.width * 0.35,
-              colors: [const Color(0xFF14B8A6), const Color(0xFF06B6D4)],
+              colors: [const Color(0xFF92400E), const Color(0xFF78350F)],
             ),
           ),
 

@@ -19,6 +19,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _obscurePass = true;
+  bool _obscureConfirm = true;
 
   @override
   void dispose() {
@@ -89,7 +90,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     AppTextField(
                       hint: 'Confirm password',
                       controller: _confirmCtrl,
-                      obscureText: true,
+                      obscureText: _obscureConfirm,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          color: color.secondary,
+                        ),
+                        onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                      ),
                     ),
                     const SizedBox(height: 28),
                     AppButton(

@@ -8,7 +8,6 @@ import 'package:booking_slot_app/utils/app_routes.dart';
 import 'package:booking_slot_app/utils/theme/theme.dart';
 import 'package:booking_slot_app/utils/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,7 +15,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Init Supabase — used for auth across the app
   await Supabase.initialize(
     url: 'https://awpsolscrfwxxihtkeee.supabase.co',
     publishableKey:
@@ -28,12 +26,9 @@ void main() async {
   final initialTheme = (isDark == 'true') ? darkMode : lightMode;
 
   runApp(
-    MultiBlocProvider(
-      providers: const [],
-      child: ChangeNotifierProvider(
-        create: (_) => ThemeProvider(initialTheme),
-        child: const MyApp(),
-      ),
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(initialTheme),
+      child: const MyApp(),
     ),
   );
 }
