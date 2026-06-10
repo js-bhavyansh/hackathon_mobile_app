@@ -2,9 +2,11 @@ import 'package:booking_slot_app/bloc/booking/booking_cubit.dart';
 import 'package:booking_slot_app/bloc/booking/booking_state.dart';
 import 'package:booking_slot_app/common/error_view.dart';
 import 'package:booking_slot_app/data/models/booking_model.dart';
+import 'package:booking_slot_app/utils/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
@@ -32,9 +34,32 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-              child: Text(
-                'My Bookings',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color.onSurface),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'My Bookings',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color.onSurface),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await Supabase.instance.client.auth.signOut();
+                      if (context.mounted) {
+                        Navigator.pushReplacementNamed(context, AppRoutes.signInScreen);
+                      }
+                    },
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: color.primaryFixedDim,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.logout_rounded, size: 20, color: color.onSurface),
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(

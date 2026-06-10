@@ -7,6 +7,7 @@ import 'package:booking_slot_app/utils/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 
 class VenuesScreen extends StatefulWidget {
@@ -61,6 +62,8 @@ class _VenuesScreenState extends State<VenuesScreen> {
                   ),
                   // Theme toggle button
                   _ThemeToggleButton(),
+                  const SizedBox(width: 8),
+                  _SignOutButton(),
                 ],
               ),
             ),
@@ -246,6 +249,31 @@ class _VenueCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// Sign out icon button — signs out via Supabase and navigates to sign-in
+class _SignOutButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: () async {
+        await Supabase.instance.client.auth.signOut();
+        if (context.mounted) {
+          Navigator.pushReplacementNamed(context, AppRoutes.signInScreen);
+        }
+      },
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: color.primaryFixedDim,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(Icons.logout_rounded, size: 20, color: color.onSurface),
       ),
     );
   }
