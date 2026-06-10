@@ -8,12 +8,15 @@ class BookingService {
 
   Future<String> bookSlot(String slotId) async {
     final res = await _dio.post('/bookings', data: {'slot_id': slotId});
-    return res.data['booking_id'] as String;
+    final body = res.data as Map<String, dynamic>;
+    // booking id may be nested under 'data' or directly in body
+    final inner = body['data'] ?? body;
+    return (inner['id'] ?? inner['booking_id'] ?? inner['bookingId']).toString();
   }
 
   Future<List<BookingModel>> getMyBookings() async {
     final res = await _dio.get('/bookings/my-bookings');
-    final List data = res.data as List;
+    final List data = (res.data as Map<String, dynamic>)['data'] as List;
     return data.map((e) => BookingModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
