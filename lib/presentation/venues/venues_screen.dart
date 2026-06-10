@@ -135,7 +135,15 @@ class _VenuesScreenState extends State<VenuesScreen> {
                         childAspectRatio: 0.85,
                       ),
                       itemCount: state.venues.length,
-                      itemBuilder: (context, i) => _VenueCard(venue: state.venues[i]),
+                      // Pass screen-level context to navigation — stable after route pops
+                      itemBuilder: (_, i) => _VenueCard(
+                        venue: state.venues[i],
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.venueDetailScreen,
+                          arguments: state.venues[i],
+                        ),
+                      ),
                     );
                   }
                   return const SizedBox.shrink();
@@ -152,7 +160,8 @@ class _VenuesScreenState extends State<VenuesScreen> {
 // Card for each venue matching the design reference
 class _VenueCard extends StatelessWidget {
   final VenueModel venue;
-  const _VenueCard({required this.venue});
+  final VoidCallback onTap;
+  const _VenueCard({required this.venue, required this.onTap});
 
   // Different gradient per sport type
   List<Color> get _gradientColors {
@@ -165,7 +174,7 @@ class _VenueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, AppRoutes.venueDetailScreen, arguments: venue),
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
