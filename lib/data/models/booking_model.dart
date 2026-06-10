@@ -24,7 +24,8 @@ class BookingModel extends Equatable {
   bool get isConfirmed => status == 'confirmed';
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
-    // Backend returns nested: slots → venues
+    // Backend nested select: slots { id, date, start_time, end_time, venues { ... } }
+    // slot_id and user_id are NOT returned by /my-bookings — fall back gracefully
     final slotJson = json['slots'] as Map<String, dynamic>?;
     final venueJson = slotJson?['venues'] as Map<String, dynamic>?;
 
@@ -32,10 +33,7 @@ class BookingModel extends Equatable {
     VenueModel? venue;
 
     if (slotJson != null) {
-      slot = SlotModel.fromJson({
-        ...slotJson,
-        'venue_id': venueJson?['id'] ?? '',
-      });
+      slot = SlotModel.fromJson(slotJson, venueId: venueJson?['id'] as String? ?? '');
     }
     if (venueJson != null) {
       venue = VenueModel.fromJson(venueJson);
@@ -43,8 +41,8 @@ class BookingModel extends Equatable {
 
     return BookingModel(
       id: json['id'] as String,
-      slotId: json['slot_id'] as String,
-      userId: json['user_id'] as String,
+      slotId: json['slot_id'] as String? ?? slotJson?['id'] as String? ?? '',
+      userId: json['user_id'] as String? ?? '',
       bookedAt: json['booked_at'] as String,
       status: json['status'] as String,
       slot: slot,
